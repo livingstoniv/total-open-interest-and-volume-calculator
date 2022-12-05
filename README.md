@@ -3,9 +3,9 @@ This program finds the total open long interest, short interest, long volume and
 
 Dependencies:
 
-yahoo-fin
-pandas
-datetime
-numpy
-xlsxwriter
+yahoo-fin,
+pandas,
+datetime,
+numpy,
+xlsxwriter,
 openpyxl
