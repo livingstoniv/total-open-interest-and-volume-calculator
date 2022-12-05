@@ -1,4 +1,3 @@
-
 from yahoo_fin import options as op
 import pandas as pd
 from datetime import datetime, date
@@ -82,7 +81,7 @@ for i in range(0, len(expDates)):
 #Interates The On-Going Expiration Dates Until Complete
     print('Finished with ' + expDate.strftime('%m/%d/%Y') + ' expiration.')
 
-byExpirationData = pd.DataFrame(data = list(zip(expirationDate, daysToExpiration, totalLongVolumeByExpiration, totalLongOpenInterestByExpiration, totalShortVolumeByExpiration, totalShortOpenInterestByExpiration)), columns= ['Expiration Date', 'DTE', 'Total Long Volume', 'Total Long Open Interest', 'Total Short Volume', 'Total Short Open Interest'])
+byExpirationData = pd.DataFrame(data = list(zip(expirationDate, daysToExpiration, totalLongVolumeByExpiration, longVolAsPerc, totalLongOpenInterestByExpiration, longOpenIntAsPerc, totalShortVolumeByExpiration, shortVolAsPerc, totalShortOpenInterestByExpiration, shortOpenIntAsPerc)), columns= ['Expiration Date', 'DTE', 'Total Long Volume', 'Long Vol (Percent)', 'Total Long Open Interest', 'Long Open Int (Percent)', 'Total Short Volume', 'Short Vol (Percent)', 'Total Short Open Interest', 'Short Open Int (Percent)'])
 print(byExpirationData)
 #Exports Dataframe To An Excel Sheet, Inputs Are Used To Make Naming The File In The Terminal Easier
 file_name = input("Enter Your File Name Here: ")
