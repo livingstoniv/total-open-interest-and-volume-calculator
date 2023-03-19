@@ -84,8 +84,8 @@ for i in range(0, len(expDates)):
 byExpirationData = pd.DataFrame(data = list(zip(expirationDate, daysToExpiration, totalLongVolumeByExpiration, longVolAsPerc, totalLongOpenInterestByExpiration, longOpenIntAsPerc, totalShortVolumeByExpiration, shortVolAsPerc, totalShortOpenInterestByExpiration, shortOpenIntAsPerc)), columns= ['Expiration Date', 'DTE', 'Total Long Volume', 'Long Vol (Percent)', 'Total Long Open Interest', 'Long Open Int (Percent)', 'Total Short Volume', 'Short Vol (Percent)', 'Total Short Open Interest', 'Short Open Int (Percent)'])
 print(byExpirationData)
 #Exports Dataframe To An Excel Sheet, Inputs Are Used To Make Naming The File In The Terminal Easier
-file_name = input("Enter Your File Name Here: ")
-sheet_name_var = input("Enter The Name Of Your Sheet Here: ")
+file_name = str(ticker) + "-" + str(today)
+sheet_name_var = str(ticker)
 file_extension = '.xlsx'
 
 #Code to make column titles in excel sheet fit in Excel sheet cells
