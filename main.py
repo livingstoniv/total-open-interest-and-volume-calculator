@@ -8,29 +8,42 @@ import openpyxl as px
 
 
 #Empty Lists For Data
+#date lists
 expirationDate = []
 daysToExpiration = []
+#volume lists
 totalLongVolumeByExpiration = []
 totalShortVolumeByExpiration = []
+#open int lists
 totalLongOpenInterestByExpiration = []
 totalShortOpenInterestByExpiration = []
+#open interest and volume percentage lists
 longOpenIntAsPerc = []
 shortOpenIntAsPerc = []
 longVolAsPerc = []
 shortVolAsPerc = []
+#OTM and ITM both Long and Short Lists
 OTMLongList = []
 ITMLongList = []
 OTMShortList = []
 ITMShortList = []
+#otm and itm percentage lists
 OTMLongPercList = []
 ITMLongPercList = []
 OTMShortPercList = []
 ITMShortPercList = []
+#implied volatility lists
+AvgIVLongList = []
+AvgIVOTMLongList = []
+AvgIVITMLongList = []
+AvgIVShortList = []
+AvgIVOTMShortList = []
+AvgIVITMShortList = []
 
 
 
 #Input For Finding Stock Info, Run The Program Then Enter The Ticker Into The Terminal
-ticker = input("Enter Ticker Here (Make Sure It Has Option Data): ")
+ticker = 'SPY'
 
 
 #Expiration Date Variables
@@ -52,8 +65,7 @@ for i in range(0, len(expDates)):
 
 
 
-# print(expDates)
-# print(chain)
+
 
 #Creates Numeric Data Structure
     chain['calls']['Volume'] = pd.to_numeric(chain['calls']['Volume'], errors = 'coerce')
@@ -67,6 +79,15 @@ for i in range(0, len(expDates)):
     ShortOpenInt = chain['puts']['Open Interest']
     LongStrike = chain['calls']['Strike']
     ShortStrike = chain['puts']['Strike']
+    LongIV = chain['calls']['Implied Volatility']
+    ShortIV = chain['puts']['Implied Volatility']
+
+    LongIVStrip = [i.strip('%') for i in LongIV]
+    ShortIVStrip = [c.strip('%') for c in ShortIV]
+
+    floatLongIV = [float(g) for g in LongIVStrip]
+    floatShortIV = [float(w) for w in ShortIVStrip]
+
 
 
     totalLongVol = chain['calls']['Volume'].sum()
@@ -93,17 +114,44 @@ for i in range(0, len(expDates)):
     maxLongOpenInt = max(LongOpenInt)
     maxShortOpenInt = max(ShortOpenInt)
 
-    df = pd.DataFrame(data = list(zip(LongOpenInt, LongStrike, ShortOpenInt, ShortStrike)), columns= ['Long Open Int', 'Long Strike', 'Short Open Int', 'Short Strike'])
+    df = pd.DataFrame(data = list(zip(LongOpenInt, LongStrike, floatLongIV, ShortOpenInt, ShortStrike, floatShortIV)), columns= ['Long Open Int', 'Long Strike', 'Long IV', 'Short Open Int', 'Short Strike', 'Short IV'])
     # print(df)
-    OTMLong = df[df['Long Strike'] < livePrice]['Long Open Int'].sum()
-    print("Total OTM Long: " + str(OTMLong))
-    ITMLong = df[df['Long Strike'] > livePrice]['Long Open Int'].sum()
-    print('Total ITM Long: ' + str(ITMLong))
-    OTMShort = df[df['Short Strike'] < livePrice]['Short Open Int'].sum()
-    print("Total OTM Short: " + str(OTMShort))
-    ITMShort = df[df['Short Strike'] > livePrice]['Short Open Int'].sum()
-    print("Total ITM Short: "+ str(ITMShort))
     
+ 
+
+    AvgLongIV = sum(floatLongIV) / len(floatLongIV)
+    AvgShortIV = sum(floatShortIV) / len(floatShortIV)
+    roundAvgLongIV = round(AvgLongIV, 2)
+    roundAvgShortIV = round(AvgShortIV, 2)
+    # print(roundAvgLongIV)
+    # print(roundAvgShortIV)
+
+
+    OTMLong = df[df['Long Strike'] < livePrice]['Long Open Int'].sum()
+    # print("Total OTM Long: " + str(OTMLong))
+    ITMLong = df[df['Long Strike'] > livePrice]['Long Open Int'].sum()
+    # print('Total ITM Long: ' + str(ITMLong))
+    OTMLongIV = df[df['Long Strike'] < livePrice]['Long IV']
+    ITMLongIV = df[df['Long Strike'] > livePrice]['Long IV']
+    OTMShort = df[df['Short Strike'] < livePrice]['Short Open Int'].sum()
+    # print("Total OTM Short: " + str(OTMShort))
+    ITMShort = df[df['Short Strike'] > livePrice]['Short Open Int'].sum()
+    OTMShortIV = df[df['Short Strike'] < livePrice]['Short IV']
+    ITMShortIV = df[df['Short Strike'] > livePrice]['Short IV']
+    # print("Total ITM Short: "+ str(ITMShort))
+    AvgOTMLongIV = sum(OTMLongIV) / len(OTMLongIV)
+    roundAvgOTMLongIV = round(AvgOTMLongIV, 2)
+    # print(roundAvgOTMLongIV)
+    AvgITMLongIV = sum(ITMLongIV) / len(ITMLongIV)
+    roundAvgITMLongIV = round(AvgITMLongIV, 2)
+    # print(roundAvgITMLongIV)
+    AvgOTMShortIV = sum(OTMShortIV) / len(OTMShortIV)
+    roundAvgOTMShortIV = round(AvgOTMShortIV, 2)
+    # print(roundAvgOTMShortIV)
+    AvgITMShortIV = sum(ITMShortIV) / len(ITMShortIV)
+    roundAvgITMShortIV = round(AvgITMShortIV, 2)
+    # print(roundAvgITMShortIV)
+
     OTMLongPerc = 100 * OTMLong / totalLongInt
     ITMLongPerc = 100 * ITMLong / totalLongInt
     OTMShortPerc = 100 * OTMShort / totalShortInt
@@ -136,6 +184,12 @@ for i in range(0, len(expDates)):
     ITMLongPercList.append(roundITMLongPerc)
     OTMShortPercList.append(roundOTMShortPerc)
     ITMShortPercList.append(roundITMShortPerc)
+    AvgIVLongList.append(roundAvgLongIV)
+    AvgIVShortList.append(roundAvgShortIV)
+    AvgIVOTMLongList.append(roundAvgOTMLongIV)
+    AvgIVITMLongList.append(roundAvgITMLongIV)
+    AvgIVOTMShortList.append(roundAvgOTMShortIV)
+    AvgIVITMShortList.append(roundAvgITMShortIV) 
 
     
     
@@ -143,10 +197,12 @@ for i in range(0, len(expDates)):
     print('Finished with ' + expDate.strftime('%m/%d/%Y') + ' expiration.')
 
 byExpirationData = pd.DataFrame(data = list(zip(expirationDate, daysToExpiration, totalLongVolumeByExpiration, longVolAsPerc,\
-     totalLongOpenInterestByExpiration, longOpenIntAsPerc, OTMLongList, OTMLongPercList, ITMLongList, ITMLongPercList, totalShortVolumeByExpiration, shortVolAsPerc, \
-     totalShortOpenInterestByExpiration, shortOpenIntAsPerc, OTMShortList, OTMShortPercList, ITMShortList, ITMShortPercList)), columns= ['Expiration Date', 'DTE', 'Total Long Volume', 'Long Vol (Percent)', 'Total Long Open Interest', 'Long Open Int (Percent)', \
-    'OTM Long', 'OTM Long Percent', 'ITM Long', 'ITM Long Percent', 'Total Short Volume', 'Short Vol (Percent)', 'Total Short Open Interest', \
-    'Short Open Int (Percent)', 'OTM Short', 'OTM Short Percent','ITM Short', 'ITM Short Percent'])
+     totalLongOpenInterestByExpiration, longOpenIntAsPerc, OTMLongList, OTMLongPercList, ITMLongList, ITMLongPercList, AvgIVLongList, AvgIVOTMLongList, \
+     AvgIVITMLongList, totalShortVolumeByExpiration, shortVolAsPerc, \
+     totalShortOpenInterestByExpiration, shortOpenIntAsPerc, OTMShortList, OTMShortPercList, ITMShortList, ITMShortPercList,\
+     AvgIVShortList, AvgIVOTMShortList, AvgIVITMShortList)), columns= ['Expiration Date', 'DTE', 'Total Long Volume', 'Long Vol (Percent)', 'Total Long Open Interest', 'Long Open Int (Percent)', \
+    'OTM Long', 'OTM Long Percent', 'ITM Long', 'ITM Long Percent', 'Avg Long IV', 'Avg Long OTM IV', 'Avg Long ITM IV','Total Short Volume', 'Short Vol (Percent)', 'Total Short Open Interest', \
+    'Short Open Int (Percent)', 'OTM Short', 'OTM Short Percent','ITM Short', 'ITM Short Percent', 'Avg Short IV', 'Avg Short OTM IV', 'Avg Short ITM IV'])
 print(byExpirationData)
 #Exports Dataframe To An Excel Sheet, Inputs Are Used To Make Naming The File In The Terminal Easier
 file_name = str(ticker) + "-" + str(fileDate)
