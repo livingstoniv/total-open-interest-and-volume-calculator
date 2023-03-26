@@ -43,7 +43,7 @@ AvgIVITMShortList = []
 
 
 #Input For Finding Stock Info, Run The Program Then Enter The Ticker Into The Terminal
-ticker = 'SPY'
+ticker = input("Enter Stock Ticker Here (Make Sure It Has Option Data: ")
 
 
 #Expiration Date Variables
@@ -125,20 +125,36 @@ for i in range(0, len(expDates)):
     roundAvgShortIV = round(AvgShortIV, 2)
     # print(roundAvgLongIV)
     # print(roundAvgShortIV)
-
-
+    
+    #Finds all of the OTM Long Open Interest 
     OTMLong = df[df['Long Strike'] < livePrice]['Long Open Int'].sum()
     # print("Total OTM Long: " + str(OTMLong))
+    
+    #Finds all of the ITM Long Open Interest
     ITMLong = df[df['Long Strike'] > livePrice]['Long Open Int'].sum()
     # print('Total ITM Long: ' + str(ITMLong))
+    
+    #Finds all of the OTM Long Implied Volatility
     OTMLongIV = df[df['Long Strike'] < livePrice]['Long IV']
+    
+    #Finds all of the ITM Long Implied Volatility
     ITMLongIV = df[df['Long Strike'] > livePrice]['Long IV']
-    OTMShort = df[df['Short Strike'] < livePrice]['Short Open Int'].sum()
+    
+    #Finds all of the OTM Short
+    OTMShort = df[df['Short Strike'] > livePrice]['Short Open Int'].sum()
     # print("Total OTM Short: " + str(OTMShort))
-    ITMShort = df[df['Short Strike'] > livePrice]['Short Open Int'].sum()
-    OTMShortIV = df[df['Short Strike'] < livePrice]['Short IV']
-    ITMShortIV = df[df['Short Strike'] > livePrice]['Short IV']
+    
+    #Finds all of the ITM Short
+    ITMShort = df[df['Short Strike'] < livePrice]['Short Open Int'].sum()
+    
+    #Finds all of the OTM Short Implied Volatility
+    OTMShortIV = df[df['Short Strike'] > livePrice]['Short IV']
+     
+    #Finds all of the ITM Short Implied Volatility
+    ITMShortIV = df[df['Short Strike'] < livePrice]['Short IV']
     # print("Total ITM Short: "+ str(ITMShort))
+    
+    #Finds 
     AvgOTMLongIV = sum(OTMLongIV) / len(OTMLongIV)
     roundAvgOTMLongIV = round(AvgOTMLongIV, 2)
     # print(roundAvgOTMLongIV)
