@@ -1,3 +1,4 @@
+from socket import create_connection
 from yahoo_fin import options as op
 import pandas as pd
 from datetime import datetime, date
@@ -5,9 +6,13 @@ import numpy as np
 from yahoo_fin import stock_info as si
 from xlsxwriter.utility import xl_rowcol_to_cell
 import openpyxl as px
+import sqlalchemy
+import itertools
+
 
 
 #Empty Lists For Data
+
 
 
 #Date Lists
@@ -62,13 +67,13 @@ AvgIVITMShortList = []
 
 
 #Input For Finding Stock Info, Run The Program Then Enter The Ticker Into The Terminal
-ticker = input("Enter Stock Ticker Here (Make Sure It Has Option Data: ")
+ticker = 'SPY'
 
 
 #Expiration Date Variables
 today = date.today()
-now = datetime.now()
-fileDate = now.strftime("%Y-%m-%d-%H-%M")
+nowFile = datetime.now()
+fileDate = nowFile.strftime("%Y-%m-%d-%H-%M")
 todaysDate = datetime(today.year, today.month, today.day)
 expDates = op.get_expiration_dates(ticker)
 
@@ -76,11 +81,12 @@ expDates = op.get_expiration_dates(ticker)
 for i in range(0, len(expDates)):
     expDate = datetime.strptime(expDates[i], '%B %d, %Y')
     DTE = (expDate - todaysDate).days
+    nowie = datetime.now()
+    noway = nowie.strftime("%Y-%m-%d %H:%M:%S")
 
     chain = op.get_options_chain(ticker, date= expDates[i])
     livePrice = si.get_live_price(ticker)
-    
-
+    optionTicker = ticker
 
 
 
@@ -140,8 +146,7 @@ for i in range(0, len(expDates)):
     roundShortOpenInt = round(shortOpenIntPercent, 2)
     
     #Finds Max Value Of Long Vs Short Open Interest (Currently In Development)
-    maxLongOpenInt = max(LongOpenInt)
-    maxShortOpenInt = max(ShortOpenInt)
+
 
      #Creates A Seperate DataFrame For Further Equations
     df = pd.DataFrame(data = list(zip(LongOpenInt, LongVolume, LongStrike, floatLongIV, ShortOpenInt, ShortVolume, ShortStrike, floatShortIV)), columns= ['Long Open Int', 'Long Volume', 'Long Strike', 'Long IV', 'Short Open Int', 'Short Volume', 'Short Strike', 'Short IV'])
@@ -157,8 +162,18 @@ for i in range(0, len(expDates)):
     roundAvgLongIV = round(AvgLongIV, 2)
     roundAvgShortIV = round(AvgShortIV, 2)
   
+    # maxLongStrike = df[df['Long Open Int'] == max(LongOpenInt)]['Long Strike']
+    # maxLongStrikeInt = float(maxLongStrike)
+    # print(maxLongStrikeInt)
+
+    # maxShortStrike = df[df['Short Open Int'] == max(ShortOpenInt)]['Short Strike']
+    # maxShortStrikeInt = float(maxShortStrike)
+    # print(maxShortStrikeInt)
+
     
+
     
+
     #Finds all of the OTM Long Open Interest 
     OTMLong = df[df['Long Strike'] < livePrice]['Long Open Int'].sum()
 
@@ -286,22 +301,30 @@ for i in range(0, len(expDates)):
     
     #Interates The On-Going Expiration Dates Until Complete (To Show Progress Of The Programs Data Collection)
     print('Finished with ' + expDate.strftime('%m/%d/%Y') + ' expiration.')
+    
+
 
 #Variable For Main DataFrame That Holds All Of The Iterated Information
-byExpirationData = pd.DataFrame(data = list(zip(expirationDate, daysToExpiration, totalLongVolumeByExpiration, longVolAsPerc, OTMLongVolList, OTMLongVolPercList, ITMLongVolList, ITMLongVolPercList,\
+byExpirationData = pd.DataFrame(data = list(zip(expirationDate, totalLongVolumeByExpiration, longVolAsPerc, OTMLongVolList, OTMLongVolPercList, ITMLongVolList, ITMLongVolPercList,\
      totalLongOpenInterestByExpiration, longOpenIntAsPerc, OTMLongList, OTMLongPercList, ITMLongList, ITMLongPercList, AvgIVLongList, AvgIVOTMLongList, \
      AvgIVITMLongList, totalShortVolumeByExpiration, shortVolAsPerc, OTMShortVolList, OTMShortVolPercList, ITMShortVolList, ITMShortVolPercList,\
      totalShortOpenInterestByExpiration, shortOpenIntAsPerc, OTMShortList, OTMShortPercList, ITMShortList, ITMShortPercList,\
-     AvgIVShortList, AvgIVOTMShortList, AvgIVITMShortList)), columns= ['Expiration Date', 'DTE', 'Total Long Volume',  'OTM Long Volume', 'OTM Long Volume (Percent)', 'ITM Long Volume', 'ITM Long Volume (Percent)', 'Long Vol (Percent)', 'Total Long Open Interest', 'Long Open Int (Percent)', \
-    'OTM Long', 'OTM Long Percent', 'ITM Long', 'ITM Long Percent', 'Avg Long IV', 'Avg Long OTM IV', 'Avg Long ITM IV','Total Short Volume', 'Short Vol (Percent)', 'OTM Short Volume', 'OTM Short Volume (Percent)', 'ITM Short Volume', 'ITM Short Volume (Percent)', 'Total Short Open Interest', \
-    'Short Open Int (Percent)', 'OTM Short', 'OTM Short Percent','ITM Short', 'ITM Short Percent', 'Avg Short IV', 'Avg Short OTM IV', 'Avg Short ITM IV'])
+     AvgIVShortList, AvgIVOTMShortList, AvgIVITMShortList)), columns= ['Expiration_Date', 'Total_Long_Volume',  'Long_Volume_Percent', 'OTM_Long_Volume', 'OTM_Long_Volume_Percent','ITM_Long_Volume', 'ITM_Long_Volume_Percent',  \
+    'Total_Long_Open_Interest', 'Long_Open_Int_Percent', \
+    'OTM_Long', 'OTM_Long_Percent', 'ITM_Long', 'ITM_Long_Percent', 'Avg_Long_IV', 'Avg_Long_OTM_IV', 'Avg_Long_ITM_IV','Total_Short_Volume', 'Short_Vol_Percent', 'OTM_Short_Volume', 'OTM_Short_Volume_Percent', 'ITM_Short_Volume', 'ITM_Short_Volume_Percent', 'Total_Short_Open_Interest', \
+    'Short_Open_Int_Percent', 'OTM_Short', 'OTM_Short_Percent','ITM_Short', 'ITM_Short_Percent', 'Avg_Short_IV', 'Avg_Short_OTM_IV', 'Avg_Short_ITM_IV'])
 #Prints The Final DataFrame Into The Terminal
 print(byExpirationData)
+
+
+
 
 #Exports Dataframe To An Excel Sheet And Uses Variables To Name The File By Ticker Name, Date, and Time (Hour + Minute) In The Format (ticker-year-month-day-hour-minute)
 file_name = str(ticker) + "-" + str(fileDate)
 sheet_name_var = str(ticker)
 file_extension = '.xlsx'
+
+
 
 #Code to Make Titles Of Each Column in Excel Sheet Fit in The Excel Sheet Cells By Iterating Through Each Column And Resizing It To Fit Titles
 writer = pd.ExcelWriter(file_name + file_extension, engine='xlsxwriter')
